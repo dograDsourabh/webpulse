@@ -1,6 +1,54 @@
-import { ArrowRight, Gauge, Search, ShieldCheck, Zap } from "lucide-react";
+import { useState } from "react";
+import {
+  ArrowRight,
+  Gauge,
+  Search,
+  ShieldCheck,
+  Zap,
+} from "lucide-react";
 
 function Home() {
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    setError("");
+
+    const trimmedUrl = url.trim();
+
+    if (!trimmedUrl) {
+      setError("Please enter a website URL.");
+      return;
+    }
+
+    let parsedUrl;
+
+    try {
+      parsedUrl = new URL(trimmedUrl);
+    } catch {
+      setError("Please enter a valid URL.");
+      return;
+    }
+
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+      setError("Please enter a valid HTTP or HTTPS URL.");
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    // Temporary mock request.
+    // We will replace this with our FastAPI request later.
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    console.log("Website ready for analysis:", parsedUrl.href);
+
+    setIsAnalyzing(false);
+  };
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
@@ -16,7 +64,7 @@ function Home() {
             </span>
           </div>
 
-          <span className="text-sm text-slate-400">
+          <span className="hidden text-sm text-slate-400 sm:block">
             Website Health Analyzer
           </span>
         </header>
@@ -42,27 +90,58 @@ function Home() {
             </p>
 
             {/* URL Form */}
-            <form className="mx-auto mt-10 flex max-w-2xl flex-col gap-3 sm:flex-row">
-              <div className="relative flex-1">
-                <Search
-                  size={20}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
-                />
+            <form
+              onSubmit={handleSubmit}
+              className="mx-auto mt-10 max-w-2xl"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                  <Search
+                    size={20}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                  />
 
-                <input
-                  type="url"
-                  placeholder="https://example.com"
-                  className="h-14 w-full rounded-xl border border-slate-700 bg-slate-900 pl-12 pr-4 text-white outline-none transition focus:border-slate-400"
-                />
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={(event) => {
+                      setUrl(event.target.value);
+
+                      if (error) {
+                        setError("");
+                      }
+                    }}
+                    placeholder="https://example.com"
+                    disabled={isAnalyzing}
+                    className="h-14 w-full rounded-xl border border-slate-700 bg-slate-900 pl-12 pr-4 text-white outline-none transition placeholder:text-slate-600 focus:border-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isAnalyzing}
+                  className="flex h-14 items-center justify-center gap-2 rounded-xl bg-white px-6 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-slate-950" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      Analyze Website
+                      <ArrowRight size={18} />
+                    </>
+                  )}
+                </button>
               </div>
 
-              <button
-                type="submit"
-                className="flex h-14 items-center justify-center gap-2 rounded-xl bg-white px-6 font-semibold text-slate-950 transition hover:bg-slate-200"
-              >
-                Analyze Website
-                <ArrowRight size={18} />
-              </button>
+              {/* Error */}
+              {error && (
+                <p className="mt-3 text-left text-sm text-red-400">
+                  {error}
+                </p>
+              )}
             </form>
 
             {/* Features */}
