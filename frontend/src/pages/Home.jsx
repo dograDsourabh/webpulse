@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useAudit from "../hooks/useAudit";
 import {
   ArrowRight,
   Gauge,
@@ -9,9 +11,8 @@ import {
 
 function Home() {
   const [url, setUrl] = useState("");
-  const [error, setError] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
+  const { analyze, isAnalyzing, error, setError } = useAudit();
+  const navigate = useNavigate();
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -38,17 +39,13 @@ function Home() {
       return;
     }
 
-    setIsAnalyzing(true);
-
-    // Temporary mock request.
-    // We will replace this with our FastAPI request later.
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    console.log("Website ready for analysis:", parsedUrl.href);
-
-    setIsAnalyzing(false);
+    try {
+      const audit = await analyze(parsedUrl.href);
+      navigate("/report", { state: { audit } });
+    } catch {
+      // useAudit exposes a user-facing error message.
+    }
   };
-
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
@@ -101,9 +98,14 @@ function Home() {
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
                   />
 
+                  <label className="sr-only" htmlFor="audit-url">
+                    Website URL
+                  </label>
                   <input
+                    id="audit-url"
                     type="url"
                     value={url}
+                    required
                     onChange={(event) => {
                       setUrl(event.target.value);
 
@@ -112,7 +114,10 @@ function Home() {
                       }
                     }}
                     placeholder="https://example.com"
+                    autoComplete="url"
                     disabled={isAnalyzing}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? "audit-error" : undefined}
                     className="h-14 w-full rounded-xl border border-slate-700 bg-slate-900 pl-12 pr-4 text-white outline-none transition placeholder:text-slate-600 focus:border-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </div>
@@ -124,12 +129,12 @@ function Home() {
                 >
                   {isAnalyzing ? (
                     <>
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-slate-950" />
-                      Analyzing...
+                      <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-slate-950" />
+                      <span>Analyzing website…</span>
                     </>
                   ) : (
                     <>
-                      Analyze Website
+                      {error ? "Retry analysis" : "Analyze website"}
                       <ArrowRight size={18} />
                     </>
                   )}
@@ -138,7 +143,7 @@ function Home() {
 
               {/* Error */}
               {error && (
-                <p className="mt-3 text-left text-sm text-red-400">
+                <p id="audit-error" role="alert" className="mt-3 text-left text-sm text-red-300">
                   {error}
                 </p>
               )}
