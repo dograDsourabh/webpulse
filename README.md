@@ -86,6 +86,17 @@ npm run dev
 
 The Vite default URL is `http://localhost:5173`. `VITE_API_BASE_URL` may be set in the root `.env` if the API runs elsewhere. `FRONTEND_URL` in `backend/.env` controls the allowed CORS origin; multiple origins can be comma-separated.
 
+## Deploy
+
+The frontend is deployed to GitHub Pages, while the FastAPI service must be hosted separately. The root `render.yaml` configures the API for Render.
+
+1. In Render, create a Blueprint from this repository and provide `PAGESPEED_API_KEY` when prompted. Wait for the service to deploy.
+2. Verify the API at `https://<your-render-service>.onrender.com/api/health`.
+3. In GitHub, open **Settings → Secrets and variables → Actions → Variables** and add `VITE_API_BASE_URL` with the API origin, for example `https://webpulse-api.onrender.com` (no `/api` suffix).
+4. Run the **Deploy to GitHub Pages** workflow from the Actions tab so Vite rebuilds with the API URL.
+
+The backend's `FRONTEND_URL` is set to `https://dogradsourabh.github.io` for CORS. If the Pages site uses a different owner or custom domain, update that value in `render.yaml` before deploying.
+
 ## Tests and quality checks
 
 With the backend virtual environment active:
