@@ -92,7 +92,7 @@ The frontend is deployed to GitHub Pages, while the FastAPI service must be host
 
 1. In Render, create a Blueprint from this repository and provide `PAGESPEED_API_KEY` when prompted. The blueprint provisions the FastAPI service as `webpulse-audit-api` so it does not reuse the existing `webpulse-api` hostname, which currently serves a different application. Wait for the service to deploy.
 2. Verify the API at `https://webpulse-audit-api.onrender.com/api/health`.
-3. The Pages workflow builds with `https://webpulse-audit-api.onrender.com` by default, matching the service name in `render.yaml`. If the Render service has a different public hostname, set the Actions variable `VITE_API_BASE_URL` to that HTTPS origin (no `/api` suffix); a repository variable overrides the default.
+3. The Pages workflow builds with `https://webpulse-audit-api.onrender.com`, matching the service name in `render.yaml` and avoiding stale Actions variables.
 4. Run the **Deploy to GitHub Pages** workflow from the Actions tab so Vite rebuilds with the API URL.
 
 The backend's `FRONTEND_URL` is set to `https://dogradsourabh.github.io` for CORS. This is the Pages origin; the `/webpulse/` repository path is not part of an origin. If the Pages site uses a different owner or custom domain, update that value in `render.yaml` before deploying. Keep `PAGESPEED_API_KEY` only in Render's backend environment, never in a GitHub Actions variable or frontend build.
