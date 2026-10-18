@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: webpulse-api
+    name: webpulse-audit-api
     runtime: python
     plan: free
     rootDir: backend

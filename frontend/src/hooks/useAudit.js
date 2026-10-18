@@ -13,6 +13,9 @@ function getAuditErrorMessage(error) {
   if (Array.isArray(detail)) {
     return detail[0]?.msg || "Please enter a valid public website URL.";
   }
+  if (error.message?.includes("not configured for this deployment")) {
+    return error.message;
+  }
   if (error.code === "ECONNABORTED") {
     return "The analysis took too long. Try again in a moment.";
   }
